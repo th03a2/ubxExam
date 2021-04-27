@@ -134,7 +134,12 @@ class FlightCard extends Component {
   }
 
   deleteFlight(pk) {
-    this.props.onDelete(pk)
+    let has_deleted = window.confirm("Are you sure you want to delete this flight?")
+    if (has_deleted === true) {
+      this.props.onDelete(pk)
+    } else {
+      alert("Your flight is not deleted")
+    }
   }
   likeFlight(pk, flights, userid) {
     this.props.onLike(pk, flights, userid)
