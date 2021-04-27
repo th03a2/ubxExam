@@ -123,7 +123,7 @@ class Header extends Component {
         <HeaderSearch style={styles.search} />
         <div style={styles.buttonContainer}>
           <HeaderPageButtons {...this.props} />
-          <IconButton onClick={this.handleTodo}>
+          <IconButton >
             <Notifications />
           </IconButton>
           <OptionsPopOver
@@ -136,9 +136,6 @@ class Header extends Component {
     )
   }
 
-  handleTodo() {
-    this.props.history.push(PATHS.todo)
-  }
   logoPress() {
     this.props.history.push(PATHS.home)
   }

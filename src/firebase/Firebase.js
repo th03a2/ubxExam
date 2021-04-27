@@ -69,33 +69,24 @@ class Firebase {
   }
 
   flights = () => {
-    return this.db.collection('flights')
+    const flightRef = this.db.collection('flights');
+    return flightRef
   }
 
   // new function
-  addLikeOnFlight = async (postid, current) => {
-    alert(current)
-    const data = {
-      current: current + 1,
-    };
-    firebase.firestore().collection('flights').update(postid, data).then(() => {
-      console.log("Document successfully deleted!");
-    }).catch((error) => {
-      console.error("Error removing document: ", error);
-    });
+  updateFlight = async (pk, flight) => {
+    const flightRef = this.db.collection('flights').doc(pk); // Find
+    flightRef.update(flight);
   }
-  removePost = async (uid, postid) => {
-    const user = await this.user(uid)
-    return await user.update({ posts: firebase.FieldValue.arrayRemove(postid) })
+  addLikeOnFlight = async (pk, current, likes) => {
+    const data = { current: current + 1, likes: likes };
+    const flightRef = this.db.collection('flights').doc(pk);
+    flightRef.update(data);
   }
+
   removeFlight = async (pk) => {
-    alert('pk :', pk)
-    firebase.firestore().collection('flights').doc(pk).delete().then(() => {
-      console.log("Document successfully deleted!");
-      // this.props.history.push("/")
-    }).catch((error) => {
-      console.error("Error removing document: ", error);
-    });
+    const flightRef = this.db.collection('flights').doc(pk);
+    flightRef.delete();
   }
 }
 

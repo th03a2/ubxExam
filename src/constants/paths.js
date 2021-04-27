@@ -3,5 +3,4 @@ export default {
   login: '/login',
   register: '/register',
   flights: '/flights',
-  todo: '/todo',
 }

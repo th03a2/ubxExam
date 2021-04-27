@@ -45,12 +45,13 @@ const styles = {
     left: '50%',
     marginTop: -12,
     marginLeft: -12,
-  },
+  }
 }
 
 const initialState = {
   loading: false,
   success: false,
+  pk: null,
   destCountry: null,
   destAirport: null,
   orgCountry: null,
@@ -59,7 +60,7 @@ const initialState = {
   filteredFlights: null
 }
 
-class AddFlight extends Component {
+class UpdateFlight extends Component {
   state = initialState
 
   componentWillMount() {
@@ -70,11 +71,23 @@ class AddFlight extends Component {
     this.setState({
       countries
     })
+  };
+
+  componentDidUpdate(prevProps) {
+    // Typical usage (don't forget to compare props):
+    if (this.props.pk !== prevProps.pk) {
+      this.setFlight()
+    }
   }
 
   render() {
     const { open } = this.props
-    const { loading, success, countries, destCountry, destAirport, orgCountry, orgAirport, date } = this.state
+    // if (open) {
+    //   // eslint-disable-next-line
+    //   this.setFlight()
+    // }
+
+    const { loading, success, countries, destCountry, destAirport, orgCountry, orgAirport, date, pk } = this.state
 
     return (
       <Dialog
@@ -85,6 +98,7 @@ class AddFlight extends Component {
         <Box
           style={styles.container}
         >
+          <label>Update Flight</label>
           {this.renderOrigin(countries, orgCountry, orgAirport)}
           {this.renderDestination(countries, destCountry, destAirport)}
           <div style={{ display: 'flex' }}>
@@ -107,9 +121,9 @@ class AddFlight extends Component {
                 variant={success ? "outlined" : "contained"}
                 color={success ? "secondary" : "primary"}
                 disabled={loading}
-                onClick={() => this.postFlight(orgAirport, destAirport, date)}
+                onClick={() => this.updateFlight(pk, orgAirport, destAirport, date)}
               >
-                {success ? 'POSTED' : 'POST'}
+                {success ? 'POSTED' : 'UPDATE'}
                 {loading && <CircularProgress size={24} style={styles.buttonProgress} />}
               </Button>
             </ThemeProvider>
@@ -119,25 +133,23 @@ class AddFlight extends Component {
     )
   }
 
-  async postFlight(origin, destination, date) {
+  async updateFlight(pk, origin, destination, date) {
     if (!this.state.success) {
       if (origin && destination && date) {
         this.setState({ loading: true })
-        const flightsRef = this.props.firebase.flights()
-        const flightRef = await flightsRef.doc()
+
         const userRef = await this.props.firebase.user(this.props.userId)
-        await flightRef.set({
-          current: 1,
+        const flightRef = {
           origin: this.getIata(origin),
           destination: this.getIata(destination),
           date: moment(date).startOf('day').toDate().toString(),
-          poster: userRef,
-          likes: [this.props.userId],
-        })
+          poster: userRef
+        }
 
-        await this.props.firebase.addPost(this.props.userId, flightRef)
+        await this.props.firebase.updateFlight(pk, flightRef)
 
         this.setState({ loading: false, success: true })
+        this.handleClose()
       }
     }
   }
@@ -165,15 +177,16 @@ class AddFlight extends Component {
     return airport.findWhere({ name: name }).get('iata')
   }
 
-  // renderFlights(origin, destination, date) {
-  //   const flightsRef = this.props.firebase.flights()
-  //   const filteredFlights = flightsRef
-  //     .where('origin', '==', this.getIata(origin))
-  //     .where('destination', '==', this.getIata(destination))
-  //     .where('date', '==', moment(date).startOf('day').toDate().toString())
-  //     .get()
-  //     .then((snapshot) => console.log(snapshot.docs))
-  // }
+  renderFlights(origin, destination, date) {
+    const flightsRef = this.props.firebase.flights()
+    const filteredFlights = flightsRef
+      .where('origin', '==', this.getIata(origin))
+      .where('destination', '==', this.getIata(destination))
+      .where('date', '==', moment(date).startOf('day').toDate().toString())
+      .get()
+      .then((snapshot) => console.log(snapshot.docs))
+    console.log(filteredFlights);
+  }
 
   renderOrigin(countries, country, airport) {
     return (
@@ -237,6 +250,18 @@ class AddFlight extends Component {
     this.setState({ ...initialState })
     this.props.onClose()
   }
+  setFlight() {
+    const pk = this.props.pk
+    const orig = airport.findWhere({ iata: this.props.flight.origin });
+    const orgCountry = orig.attributes.country
+    const orgAirport = orig.attributes.name;
+
+    const destination = airport.findWhere({ iata: this.props.flight.destination })
+    const destCountry = destination.attributes.country
+    const destAirport = destination.attributes.name;
+
+    this.setState({ pk, orgCountry, orgAirport, destCountry, destAirport })
+  }
 }
 
 const mapStateToProps = (state) => ({
@@ -245,4 +270,4 @@ const mapStateToProps = (state) => ({
 
 export default connect(
   mapStateToProps
-)(withFirebase(AddFlight))
+)(withFirebase(UpdateFlight))

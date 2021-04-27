@@ -3,7 +3,6 @@ import Login from './login/Login'
 import Register from './register/Register'
 import Main from './main/Main'
 import Flights from './flights/Flights'
-import Todo from './todo/index'
 
 export {
   Home,
@@ -11,5 +10,4 @@ export {
   Register,
   Main,
   Flights,
-  Todo,
 }

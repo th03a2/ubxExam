@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 import Icon from '@mdi/react'
 import airport from 'airport-codes'
 import moment from 'moment'
@@ -61,7 +62,7 @@ class FlightCard extends Component {
   }
 
   render() {
-    const { details } = this.props
+    const { pk, details } = this.props
     const { hovered } = this.state
     return (
       <div style={styles.container}
@@ -69,20 +70,24 @@ class FlightCard extends Component {
         onMouseLeave={this.unhover.bind(this)}
       >
         <Box style={styles.card}>
-          {this.renderFlight(details)}
+          {this.renderFlight(pk, details)}
         </Box>
         <Overlay show={hovered} style={styles.overlay} styleShown={styles.overlayShown} styleHidden={styles.overlayHidden} />
       </div>
     )
   }
 
-  renderFlight(details) {
+  renderFlight(pk, details) {
     return (
-      <div style={{ height: '97%', width: '97%', borderRadius: 8, backgroundColor: grey[200] }}>
-        <button onClick={() => this.deleteFlight(details.id)} >x</button>
-        <button onClick={() => this.likeFlight('', details.current)} >Like</button>
-        <div style={{ height: '65%', fontFamily: 'Open Sans Condensed', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 120 }}>
-          {details.current}
+      <div style={{ height: '97%', width: '97%', borderRadius: 8, backgroundColor: grey[200], position: 'relative' }} key={pk} >
+        <div style={{ position: 'absolute', right: 0, top: 0, margin: 'auto' }}>
+          <button onClick={() => this.deleteFlight(pk)} >x</button>
+        </div>
+        <button onClick={() => this.updateFlight(pk, details)} >Update</button>
+        <div
+          style={{ height: '65%', fontFamily: 'Open Sans Condensed', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 120 }}
+        >
+          <span style={{ zIndex: 1, cursor: 'grabbing' }} onClick={() => this.likeFlight(pk, details, this.props.userId)}>{details.current}</span>
         </div>
         <div style={{ height: '10%', display: 'flex', justifyContent: 'center' }}>
           {moment(details.date).format("LL")}
@@ -131,8 +136,11 @@ class FlightCard extends Component {
   deleteFlight(pk) {
     this.props.onDelete(pk)
   }
-  likeFlight(pk, current) {
-    this.props.onLike(pk, current)
+  likeFlight(pk, flights, userid) {
+    this.props.onLike(pk, flights, userid)
+  }
+  updateFlight(pk, flight) {
+    this.props.onUpdate(pk, flight)
   }
 }
 
@@ -140,4 +148,12 @@ FlightCard.propTypes = {
   item: PropTypes.object
 }
 
-export default FlightCard
+const mapStateToProps = (state) => ({
+  userId: state.auth.user.uid
+})
+
+export default connect(
+  mapStateToProps
+)(FlightCard)
+
+// export default FlightCard

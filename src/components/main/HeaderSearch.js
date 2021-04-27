@@ -43,10 +43,11 @@ class HeaderSearch extends Component {
   render() {
     const { focused } = this.state
     return (
-      <div style={this.props.style}>
+      <div style={this.props.style} >
         <Box style={focused ? { ...styles.container, ...styles.container.focused } : styles.container}>
           <Search style={styles.icon} />
           <InputBase
+            id='searchKey'
             style={styles.input}
             placeholder="Search"
             onFocus={this.focus.bind(this)}
